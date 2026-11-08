@@ -5,11 +5,13 @@
   "main": "main.js",
   "author": "Hiago",
   "license": "MIT",
+  "homepage": "https://github.com/Hiagolim11/morpheus-wordlist",
+  "repository": "https://github.com/Hiagolim11/morpheus-wordlist",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder --linux deb --win nsis",
-    "dist:linux": "electron-builder --linux deb",
-    "dist:win": "electron-builder --win nsis"
+    "dist": "electron-builder --linux --win",
+    "dist:linux": "electron-builder --linux",
+    "dist:win": "electron-builder --win"
   },
   "devDependencies": {
     "electron": "^33.2.1",
@@ -22,19 +24,38 @@
       "output": "dist",
       "buildResources": "build"
     },
-    "files": ["**/*", "!dist/**"],
+    "files": [
+      "**/*",
+      "!dist/**"
+    ],
     "linux": {
-      "target": ["deb"],
+      "target": [
+        "deb"
+      ],
       "category": "Utility",
       "maintainer": "Hiago",
       "icon": "build/icon.png"
     },
     "deb": {
-      "depends": ["libgtk-3-0", "libnotify4", "libnss3", "libxss1", "libxtst6", "xdg-utils", "libatspi2.0-0"]
+      "depends": [
+        "libgtk-3-0",
+        "libnotify4",
+        "libnss3",
+        "libxss1",
+        "libxtst6",
+        "xdg-utils",
+        "libatspi2.0-0"
+      ]
     },
     "win": {
-      "target": ["nsis"],
-      "icon": "build/icon.ico"
+      "target": [
+        "portable"
+      ],
+      "icon": "build/icon.ico",
+      "signAndEditExecutable": false
+    },
+    "portable": {
+      "artifactName": "Morpheus-Wordlist-${version}-portable.exe"
     },
     "nsis": {
       "oneClick": false,
