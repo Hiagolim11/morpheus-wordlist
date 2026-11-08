@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Morpheus Wordlist</title>
+<meta name="description" content="Gerador de wordlist Morpheus — palavras, leetspeak, números e caracteres especiais, tudo no navegador." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#070a08;
+    --bg-2:#0b100c;
+    --panel:#0d140f;
+    --panel-2:#101a13;
+    --line:#1c2b20;
+    --text:#d7e8dc;
+    --muted:#6f8577;
+    --faint:#44574b;
+    --green:#00ff9c;
+    --green-dim:#10b981;
+    --cyan:#38e8ff;
+    --purple:#b388ff;
+    --amber:#ffcf6b;
+    --red:#ff5f6b;
+    --glow:0 0 24px rgba(0,255,156,.22);
+    --radius:14px;
+    --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:var(--mono);
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(0,255,156,.06), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(56,232,255,.05), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:repeating-linear-gradient(to bottom, rgba(255,255,255,.015) 0 1px, transparent 1px 3px);
+    mix-blend-mode:overlay;opacity:.5;
+  }
+  .wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:28px 16px 60px}
+
+  header{text-align:center;padding:14px 0 26px}
+  .logo{
+    font-weight:800;letter-spacing:.14em;font-size:clamp(26px,5vw,44px);
+    background:linear-gradient(90deg,var(--purple),var(--cyan),var(--green));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    text-shadow:0 0 30px rgba(0,255,156,.18);
+  }
+  .logo .mono-mark{color:var(--green);-webkit-text-fill-color:var(--green)}
+  .subtitle{color:var(--muted);font-size:13px;letter-spacing:.3em;margin-top:8px;text-transform:uppercase}
+  .by{color:var(--faint);font-size:12px;margin-top:4px}
+  .pill{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:6px 14px;border:1px solid var(--line);
+    border-radius:999px;background:var(--panel);font-size:12px;color:var(--muted)}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:var(--glow);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+  .grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:18px;align-items:start}
+  @media (max-width:860px){.grid{grid-template-columns:1fr}}
+
+  .panel{background:linear-gradient(180deg,var(--panel),var(--bg-2));border:1px solid var(--line);
+    border-radius:var(--radius);overflow:hidden}
+  .panel-head{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line);
+    background:var(--panel-2)}
+  .panel-head .idx{color:var(--green);font-weight:700}
+  .panel-head h2{margin:0;font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--text);font-weight:700}
+  .panel-body{padding:18px}
+
+  .field{margin-bottom:20px}
+  .field:last-child{margin-bottom:0}
+  label.lab{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:9px}
+  .hint{font-size:11.5px;color:var(--faint);margin-top:7px}
+
+  .row{display:flex;gap:8px}
+  input[type=text], select{
+    width:100%;background:#060a07;border:1px solid var(--line);color:var(--text);
+    font-family:var(--mono);font-size:14px;padding:11px 13px;border-radius:10px;outline:none;transition:border-color .15s,box-shadow .15s}
+  input[type=text]::placeholder{color:var(--faint)}
+  input[type=text]:focus, select:focus{border-color:var(--green-dim);box-shadow:0 0 0 3px rgba(0,255,156,.1)}
+  select{cursor:pointer;appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+    background-position:calc(100% - 18px) 17px,calc(100% - 13px) 17px;background-size:5px 5px;background-repeat:no-repeat}
+
+  button{font-family:var(--mono);cursor:pointer;border:none;transition:transform .08s,filter .15s,background .15s}
+  button:active{transform:translateY(1px)}
+  .btn-add{background:var(--panel-2);border:1px solid var(--line);color:var(--green);padding:0 16px;border-radius:10px;font-weight:700;font-size:18px}
+  .btn-add:hover{border-color:var(--green-dim);background:#132017}
+
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;min-height:4px}
+  .chip{display:inline-flex;align-items:center;gap:8px;padding:6px 10px 6px 12px;border:1px solid var(--line);
+    border-radius:999px;background:var(--panel-2);font-size:13px;color:var(--text);animation:pop .14s ease}
+  @keyframes pop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+  .chip b{color:var(--green);font-weight:500}
+  .chip .x{cursor:pointer;color:var(--faint);font-weight:700;line-height:1}
+  .chip .x:hover{color:var(--red)}
+  .empty-chips{color:var(--faint);font-size:12px;font-style:italic}
+
+  .toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid var(--line);
+    border-radius:10px;background:#060a07;cursor:pointer;user-select:none}
+  .toggle + .toggle{margin-top:9px}
+  .toggle span.t{font-size:13px;color:var(--text)}
+  .toggle small{display:block;color:var(--faint);font-size:11px;margin-top:2px}
+  .sw{width:40px;height:22px;border-radius:999px;background:#1a2a1f;position:relative;flex:0 0 auto;transition:background .18s}
+  .sw::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--faint);transition:transform .18s,background .18s}
+  .toggle.on .sw{background:rgba(0,255,156,.25)}
+  .toggle.on .sw::after{transform:translateX(18px);background:var(--green);box-shadow:var(--glow)}
+
+  .charbtns{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+  .charbtn{width:38px;height:38px;border-radius:9px;background:#060a07;border:1px solid var(--line);color:var(--muted);font-size:16px;font-weight:700}
+  .charbtn.on{background:rgba(0,255,156,.12);border-color:var(--green-dim);color:var(--green);box-shadow:inset 0 0 12px rgba(0,255,156,.1)}
+
+  .estimate{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 10px;padding:10px;border-radius:10px;
+    background:#060a07;border:1px solid var(--line);font-size:12.5px;color:var(--muted);text-align:center}
+  .estimate b{font-weight:800;color:var(--muted)}
+  .estimate.ok{border-color:rgba(0,255,156,.3)} .estimate.ok b{color:var(--green)}
+  .estimate.warn{border-color:rgba(255,207,107,.35)} .estimate.warn b{color:var(--amber)}
+  .estimate.bad{border-color:rgba(255,95,107,.4);background:rgba(255,95,107,.06)} .estimate.bad b{color:var(--red)}
+
+  .generate{width:100%;padding:15px;border-radius:12px;font-size:14px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+    background:linear-gradient(90deg,var(--green-dim),var(--green));color:#042b1c;box-shadow:var(--glow)}
+  .generate:hover{filter:brightness(1.08)}
+  .generate:disabled{background:var(--panel-2);color:var(--faint);box-shadow:none;cursor:not-allowed}
+
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border-bottom:1px solid var(--line)}
+  .stat{background:var(--panel-2);padding:14px 16px;text-align:center}
+  .stat .n{font-size:22px;font-weight:800;color:var(--green);line-height:1.1}
+  .stat .l{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-top:5px}
+
+  .toolbar{display:flex;gap:8px;padding:16px 18px 0}
+  .tbtn{flex:1;padding:10px;border-radius:10px;background:var(--panel-2);border:1px solid var(--line);color:var(--text);font-size:12px;font-weight:700;letter-spacing:.06em}
+  .tbtn:hover{border-color:var(--green-dim);color:var(--green)}
+  .tbtn:disabled{opacity:.4;cursor:not-allowed}
+
+  .preview{margin:14px 18px 18px;background:#050806;border:1px solid var(--line);border-radius:10px;height:388px;overflow:auto;
+    font-size:12.5px;line-height:1.7;padding:12px 14px;white-space:pre;color:var(--muted)}
+  .preview .ph{color:var(--faint);font-style:italic;white-space:normal}
+  .preview::-webkit-scrollbar{width:9px}
+  .preview::-webkit-scrollbar-thumb{background:#1c2b20;border-radius:9px}
+  .preview .more{color:var(--faint);font-style:italic}
+
+  footer{text-align:center;color:var(--faint);font-size:11px;margin-top:26px;line-height:1.7}
+  footer b{color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">H<span class="mono-mark">I</span>AGO<span style="opacity:.5"> // </span>MORPHEUS</div>
+    <div class="subtitle">Wordlist Generator</div>
+    <div class="by">created by Hiago</div>
+    <div class="pill"><span class="dot"></span> sistema pronto — tudo roda no seu navegador</div>
+  </header>
+
+  <div class="grid">
+    <!-- CONFIG -->
+    <section class="panel">
+      <div class="panel-head"><span class="idx">01</span><h2>Configuração</h2></div>
+      <div class="panel-body">
+
+        <div class="field">
+          <label class="lab">Palavras-base</label>
+          <div class="row">
+            <input type="text" id="wordInput" placeholder="ex: hiago, empresa, pet..." autocomplete="off" spellcheck="false">
+            <button class="btn-add" id="addWord" title="Adicionar">+</button>
+          </div>
+          <div class="chips" id="wordChips"><span class="empty-chips">nenhuma palavra ainda</span></div>
+          <div class="hint">Cada palavra vira 3 variações: minúscula, MAIÚSCULA e Capitalizada.</div>
+        </div>
+
+        <div class="field">
+          <label class="lab">Máx. palavras por combinação</label>
+          <select id="depth">
+            <option value="1">1 — só palavras isoladas</option>
+            <option value="2" selected>2 — pares (recomendado)</option>
+            <option value="3">3 — trios (cuidado)</option>
+            <option value="4">4 — explosivo ⚠</option>
+          </select>
+          <div class="hint">Permutações crescem fatorialmente. 2 é o equilíbrio seguro.</div>
+        </div>
+
+        <div class="field">
+          <label class="lab">Leetspeak</label>
+          <select id="leet">
+            <option value="off" selected>Desligado</option>
+            <option value="basico">Básico — 1 variante (a→4, e→3, i→1, o→0, s→5, t→7)</option>
+            <option value="completo">Completo — combina substituições ⚠</option>
+          </select>
+          <div class="hint">Expande cada palavra-base em versões "hackeadas". Completo usa trava anti-explosão por palavra.</div>
+        </div>
+
+        <div class="field">
+          <label class="lab">Números alvo</label>
+          <div class="row">
+            <input type="text" id="numInput" placeholder="datas, anos, telefone: 15/03/1998" autocomplete="off" spellcheck="false">
+            <button class="btn-add" id="addNum" title="Adicionar">+</button>
+          </div>
+          <div class="chips" id="numChips"><span class="empty-chips">nenhum número ainda</span></div>
+          <div class="hint">Datas (DDMMAAAA) são quebradas em dia, mês, ano e combinações.</div>
+        </div>
+
+        <div class="field">
+          <label class="lab">Opções de número</label>
+          <div class="toggle on" id="tglComuns">
+            <span class="t">Números comuns<small>1 · 123 · 2025 · 2026</small></span>
+            <span class="sw"></span>
+          </div>
+          <div class="toggle" id="tglPatterns">
+            <span class="t">Padrões comuns<small>123 · 1234 · 12345 · 123456 · 69 · 007 · 111…</small></span>
+            <span class="sw"></span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="lab">Caracteres especiais</label>
+          <div class="charbtns" id="charBtns"></div>
+          <div class="hint">Adicionados no início e no fim (não entre palavras).</div>
+        </div>
+
+        <div class="estimate" id="est">estimativa: <b>—</b></div>
+        <button class="generate" id="gen" disabled>⚡ Gerar Wordlist</button>
+      </div>
+    </section>
+
+    <!-- OUTPUT -->
+    <section class="panel">
+      <div class="panel-head"><span class="idx">02</span><h2>Saída</h2></div>
+      <div class="stats">
+        <div class="stat"><div class="n" id="stCount">0</div><div class="l">linhas únicas</div></div>
+        <div class="stat"><div class="n" id="stSize">0 B</div><div class="l">tamanho est.</div></div>
+        <div class="stat"><div class="n" id="stWords">0</div><div class="l">palavras-base</div></div>
+      </div>
+      <div class="toolbar">
+        <button class="tbtn" id="copy" disabled>⧉ Copiar</button>
+        <button class="tbtn" id="download" disabled>↓ Baixar .txt</button>
+      </div>
+      <div class="preview" id="preview"><span class="ph">A wordlist aparece aqui. Adicione palavras-base e clique em Gerar.</span></div>
+    </section>
+  </div>
+
+  <footer>
+    <b>Uso autorizado apenas.</b> Ferramenta para testes de segurança e auditoria de senhas com permissão.<br>
+    Nada sai do seu navegador — nenhum dado é enviado a servidores.
+  </footer>
+</div>
+
+<script src="app/wordlist-core.js"></script>
+<script>
+"use strict";
+
+// estado da UI — a lógica de geração vive em wordlist-core.js (window.WL)
+const words = [], nums = [], activeChars = new Set();
+let useComuns = true, usePatterns = false, leetMode = "off", depth = 2, lastLines = [];
+const cfg = () => ({ words, nums, leet: leetMode, comuns: useComuns, padroes: usePatterns, depth, chars: [...activeChars] });
+
+const $ = id => document.getElementById(id);
+const fmt = n => (!isFinite(n) || n > 1e12) ? ">1 trilhão" : Math.round(n).toLocaleString("pt-BR");
+function humanSize(b){ return b<1024 ? b+" B" : b<1048576 ? (b/1024).toFixed(1)+" KB" : (b/1048576).toFixed(1)+" MB"; }
+
+function renderChips(list, el, empty, onDel){
+  if(!list.length){ el.innerHTML = `<span class="empty-chips">${empty}</span>`; return; }
+  el.innerHTML = "";
+  list.forEach((v,i)=>{
+    const c = document.createElement("span");
+    c.className = "chip";
+    c.innerHTML = `<b></b><span class="x">✕</span>`;
+    c.querySelector("b").textContent = v;
+    c.querySelector(".x").onclick = ()=> onDel(i);
+    el.appendChild(c);
+  });
+}
+
+function updateEstimate(){
+  const est = $("est");
+  if(!words.length){ est.className="estimate"; est.innerHTML="estimativa: <b>—</b>"; $("gen").disabled=true; return; }
+  const { V, total } = WL.estimar(cfg());
+  const over = total > WL.HARD_CAP;
+  est.className = "estimate " + (over ? "bad" : total < 50000 ? "ok" : "warn");
+  est.innerHTML = over
+    ? `⚠ ~<b>${fmt(total)}</b> linhas — acima do limite de ${fmt(WL.HARD_CAP)}. Reduza profundidade, leet ou entradas.`
+    : `estimativa: até ~<b>${fmt(total)}</b> linhas · ${V} palavras-base`;
+  $("gen").disabled = over;
+}
+
+function refresh(){
+  renderChips(words, $("wordChips"), "nenhuma palavra ainda", i=>{words.splice(i,1);refresh();});
+  renderChips(nums, $("numChips"), "nenhum número ainda", i=>{nums.splice(i,1);refresh();});
+  $("stWords").textContent = words.length;
+  updateEstimate();
+}
+
+function addWord(){
+  const v = $("wordInput").value.trim().toLowerCase();
+  if(v && !words.includes(v)) words.push(v);
+  $("wordInput").value=""; $("wordInput").focus(); refresh();
+}
+function addNum(){
+  const v = $("numInput").value.trim();
+  if(v && !nums.includes(v)) nums.push(v);
+  $("numInput").value=""; $("numInput").focus(); refresh();
+}
+
+$("addWord").onclick = addWord;
+$("addNum").onclick = addNum;
+$("wordInput").addEventListener("keydown", e=>{ if(e.key==="Enter") addWord(); });
+$("numInput").addEventListener("keydown", e=>{ if(e.key==="Enter") addNum(); });
+$("depth").addEventListener("change", e=>{ depth = parseInt(e.target.value,10); updateEstimate(); });
+$("leet").addEventListener("change", e=>{ leetMode = e.target.value; updateEstimate(); });
+
+$("tglComuns").onclick = function(){ useComuns=!useComuns; this.classList.toggle("on",useComuns); updateEstimate(); };
+$("tglPatterns").onclick = function(){ usePatterns=!usePatterns; this.classList.toggle("on",usePatterns); updateEstimate(); };
+
+const cb = $("charBtns");
+WL.SPECIALS.forEach(ch=>{
+  const b=document.createElement("button");
+  b.className="charbtn"; b.textContent=ch;
+  b.onclick=()=>{ b.classList.toggle("on"); activeChars.has(ch)?activeChars.delete(ch):activeChars.add(ch); updateEstimate(); };
+  cb.appendChild(b);
+});
+
+$("gen").onclick = function(){
+  const t0 = performance.now();
+  const lines = WL.gerar(cfg());
+  lastLines = lines;
+  const bytes = lines.reduce((a,l)=>a+l.length+1, 0);
+  $("stCount").textContent = lines.length.toLocaleString("pt-BR");
+  $("stSize").textContent = humanSize(bytes);
+
+  const prev = $("preview");
+  const show = lines.slice(0, 2000);
+  prev.textContent = show.join("\n");
+  if(lines.length > show.length){
+    const more = document.createElement("div");
+    more.className = "more";
+    more.textContent = `\n… +${(lines.length-show.length).toLocaleString("pt-BR")} linhas (baixe para ver todas)`;
+    prev.appendChild(more);
+  }
+  if(!lines.length) prev.innerHTML = '<span class="ph">Nenhuma combinação gerada.</span>';
+
+  $("copy").disabled = $("download").disabled = lines.length===0;
+  $("gen").textContent = `⚡ Gerado em ${Math.round(performance.now()-t0)}ms — gerar de novo`;
+};
+
+$("download").onclick = ()=>{
+  const blob = new Blob([lastLines.join("\n")+"\n"], {type:"text/plain;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "wordlist.txt"; a.click();
+  URL.revokeObjectURL(url);
+};
+
+$("copy").onclick = async ()=>{
+  try{
+    await navigator.clipboard.writeText(lastLines.join("\n"));
+    const b=$("copy"), t=b.textContent; b.textContent="✓ Copiado"; setTimeout(()=>b.textContent=t,1400);
+  }catch(e){ alert("Cópia bloqueada pelo navegador. Use Baixar .txt."); }
+};
+
+refresh();
+</script>
+</body>
+</html>
